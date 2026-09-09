@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -n "${AI_MODEL_DEV_ROOT:-}" ]]; then
+    project_dir="${AI_MODEL_DEV_ROOT}/weight-visualizer"
+elif [[ -f "${PWD}/visualize.py" ]]; then
+    project_dir="${PWD}"
+else
+    command_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    project_dir="$(cd "${command_dir}/../weight-visualizer" && pwd)"
+fi
+
+if [[ ! -d "${project_dir}" ]]; then
+    echo "weight-visualizer project not found at: ${project_dir}" >&2
+    exit 1
+fi
+
+usage() {
+    cat <<'EOF'
+Usage: weight-visualizer COMMAND [ARGUMENTS]
+
+Commands:
+  build                 Validate code and dependencies
+  run [args]            Read a checkpoint and write plots (default model: gpt2)
+  serve [args]          Live explorer: zoom/pan any tensor, click for exact values
+  status                Show generated plots and cache size
+  clean                 Remove generated plots
+  help                  Show this help
+
+Run arguments:
+  --model REPO_OR_DIR   Hugging Face repo id, or a directory under /models
+  --view-mode MODE      plots | anatomy | all   (default: all)
+                          plots   the five PNG plates
+                          anatomy anatomy.svg, drawn to scale
+  --canvas-width PX     Fix the anatomy block-panel width so several models
+                        render at one comparable scale
+  --out DIR             Output directory (default: ./plots/<model>)
+
+Examples:
+  weight-visualizer run
+  weight-visualizer run --model Qwen/Qwen2.5-0.5B
+  weight-visualizer run --model /models/my-checkpoint --out ./plots/mine
+  weight-visualizer run --model gpt2 --view-mode anatomy
+  weight-visualizer serve --model gpt2            # then open http://127.0.0.1:8888
+  weight-visualizer serve --model Qwen/Qwen2.5-0.5B --port 8888
+EOF
+}
+
+action="${1:-help}"
+[[ $# -gt 0 ]] && shift
+cd "${project_dir}"
+
+case "${action}" in
+    build)
+        python -m py_compile visualize.py
+        python -c "import torch, safetensors, matplotlib, numpy; print('Dependencies: OK'); print('PyTorch:', torch.__version__); print('matplotlib:', matplotlib.__version__)"
+        echo "Project build validation: PASSED"
+        ;;
+    run)
+        exec python visualize.py "$@"
+        ;;
+    serve)
+        exec python serve.py "$@"
+        ;;
+    status)
+        echo "Project: ${project_dir}"
+        if [[ -n "$(find plots -name '*.png' -print -quit 2>/dev/null)" ]]; then
+            echo "Generated plots:"
+            find plots -name '*.png' -printf '  %p (%s bytes)\n' | sort
+        else
+            echo "Generated plots: none"
+        fi
+        echo "Hugging Face cache (HF_HOME=${HF_HOME:-unset}):"
+        du -sh "${HF_HOME:-/ai-cache}" 2>/dev/null | sed 's/^/  /' || echo "  unavailable"
+        ;;
+    clean)
+        rm -rf plots
+        echo "Removed generated plots."
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    *)
+        echo "Unknown command: ${action}" >&2
+        usage >&2
+        exit 2
+        ;;
+esac

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -n "${AI_MODEL_DEV_ROOT:-}" ]]; then
+    project_dir="${AI_MODEL_DEV_ROOT}/char-completion-transformer"
+elif [[ -f "${PWD}/model.py" && -f "${PWD}/train_all.py" ]]; then
+    project_dir="${PWD}"
+else
+    command_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    project_dir="$(cd "${command_dir}/../char-completion-transformer" && pwd)"
+fi
+
+if [[ ! -d "${project_dir}" ]]; then
+    echo "char-completion-transformer project not found at: ${project_dir}" >&2
+    exit 1
+fi
+
+usage() {
+    cat <<'EOF'
+Usage: char-completion-transformer COMMAND [ARGUMENTS]
+
+Commands:
+  build                 Validate code, dependencies, data, and directories
+  train [args]          Train all data; defaults to --no-overwrite
+  prompt [args]         Prompt the newest model repeatedly
+  test [args]           Run model evaluations
+  status                Show data, checkpoint, archive, and environment
+  help                  Show this help
+EOF
+}
+
+action="${1:-help}"
+[[ $# -gt 0 ]] && shift
+cd "${project_dir}"
+
+case "${action}" in
+    build)
+        mkdir -p data out
+        python -m py_compile model.py train.py train_all.py prompt.py test.py make_data.py
+        python -c "import torch, transformers, safetensors; print('Dependencies: OK'); print('PyTorch:', torch.__version__)"
+        python -c "import train_all; corpus, manifest = train_all.collect_corpus(); print(f'Training data: {len(corpus):,} characters'); print(f'Manifest entries: {len(manifest.splitlines()) - 1}')"
+        echo "Project build validation: PASSED"
+        ;;
+    train)
+        [[ $# -eq 0 ]] && set -- --no-overwrite
+        exec python train_all.py "$@"
+        ;;
+    prompt)
+        exec python prompt.py "$@"
+        ;;
+    test)
+        exec python test.py "$@"
+        ;;
+    status)
+        echo "Project: ${project_dir}"
+        echo "Data files:"
+        find data -type f -printf '  %p (%s bytes)\n' | sort
+        if [[ -f out/ckpt.pt ]]; then
+            echo "Current checkpoint:"
+            ls -lh out/ckpt.pt
+        else
+            echo "Current checkpoint: not trained"
+        fi
+        if [[ -f out/training_files.txt ]]; then
+            echo "Current training manifest:"
+            cat out/training_files.txt
+        fi
+        archive_count=0
+        if [[ -d out/archive ]]; then
+            archive_count="$(find out/archive -mindepth 1 -maxdepth 1 -type d | wc -l)"
+        fi
+        echo "Archived runs: ${archive_count}"
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    *)
+        echo "Unknown command: ${action}" >&2
+        usage >&2
+        exit 2
+        ;;
+esac
