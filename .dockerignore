@@ -1,0 +1,5 @@
+# Only container build inputs are needed; keep models/cache out of the context.
+**
+!.devcontainer/
+!.devcontainer/Dockerfile
+!.devcontainer/requirements-ai.txt

@@ -88,7 +88,7 @@ a direct read: `h.0.mlp.c_fc.weight[100,200]` serves `0.39199987053871155`, whic
 matches `safe_open(...).get_slice(...)` exactly.
 
 The server is stdlib-only (`http.server`) — no Flask, nothing added to the image.
-Stop it with ctrl-c, or `docker stop $(docker ps -q --filter ancestor=ai-model-dev)`
+Stop it with ctrl-c, or `docker stop $(docker ps -q --filter ancestor=ai-model-dev-base)`
 from the host.
 
 ## View modes

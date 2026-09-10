@@ -1,0 +1,12 @@
+# Direct dependencies pinned to the surviving ai-model-dev image (2026-09-10).
+# PyTorch is installed separately from the CPU wheel index by the Dockerfile.
+transformers==5.16.1
+safetensors==0.8.0
+accelerate==1.15.0
+huggingface-hub==1.30.0
+tokenizers==0.23.2
+numpy==2.4.6
+matplotlib==3.11.1
+jupyterlab==4.6.3
+ipykernel==7.3.0
+debugpy==1.8.21

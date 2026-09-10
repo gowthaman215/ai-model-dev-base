@@ -4,7 +4,7 @@ This repository contains one shared, isolated Python/PyTorch/Jupyter development
 container and multiple independently operated AI projects.
 
 ```text
-ai-model-dev/
+ai-model-dev-base/
 ├── .devcontainer/                 shared VS Code Dev Container
 ├── ai-dev-container.sh            host Docker launcher
 ├── bin/                            project commands available in the container
@@ -17,8 +17,9 @@ ai-model-dev/
 ## Start the environment
 
 ```bash
-cd ~/10718695/github/ai-model-dev
+cd ~/10718695/github/ai-model-dev-base
 ./ai-dev-container.sh build
+./ai-dev-container.sh verify
 ./ai-dev-container.sh shell
 ```
 
@@ -48,6 +49,12 @@ See [DEVCONTAINER.md](DEVCONTAINER.md) for environment setup,
 for the model workflow, and
 [weight-visualizer/README.md](weight-visualizer/README.md) for checkpoint
 inspection.
+
+The host repository is now `ai-model-dev-base`. The Docker image name is
+`ai-model-dev-base:latest`, and the repository is still mounted at `/workspace/ai-model-dev`
+inside the container so existing project commands continue to work.
+See [DEVCONTAINER-RECOVERY.md](DEVCONTAINER-RECOVERY.md) for the reconstruction
+record and step-by-step checks after the repository move.
 
 Note: `matplotlib` was added to `.devcontainer/requirements-ai.txt` for
 weight-visualizer. Run `./ai-dev-container.sh build` if your image predates it.

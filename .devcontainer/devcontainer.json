@@ -1,0 +1,41 @@
+{
+  "name": "AI / PyTorch (isolated)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "initializeCommand": ["bash", "-c", "mkdir -p \"$1/models\" \"$1/cache/huggingface\"", "--", "${localWorkspaceFolder}"],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/ai-model-dev,type=bind",
+  "workspaceFolder": "/workspace/ai-model-dev",
+  "mounts": [
+    "source=${localWorkspaceFolder}/models,target=/models,type=bind,readonly",
+    "source=${localWorkspaceFolder}/cache/huggingface,target=/ai-cache,type=bind"
+  ],
+  "containerEnv": {
+    "AI_MODEL_DEV_ROOT": "/workspace/ai-model-dev",
+    "MODEL_DIR": "/models",
+    "HF_HOME": "/ai-cache",
+    "PATH": "/workspace/ai-model-dev/bin:/usr/local/bin:/usr/local/sbin:/usr/local/python/current/bin:/usr/local/py-utils/bin:/usr/local/jupyter:/usr/local/share/nvm/current/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  },
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "forwardPorts": [8888],
+  "portsAttributes": {
+    "8888": {"label": "JupyterLab / weight explorer", "onAutoForward": "notify"}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "ms-toolsai.jupyter"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "postCreateCommand": "python /workspace/ai-model-dev/.devcontainer/verify_environment.py"
+}

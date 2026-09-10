@@ -3,7 +3,7 @@ set -euo pipefail
 
 ai_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_dir="${ai_root}/char-completion-transformer"
-image_name="ai-model-dev"
+image_name="ai-model-dev-base"
 action="${1:-shell}"
 [[ $# -gt 0 ]] && shift
 

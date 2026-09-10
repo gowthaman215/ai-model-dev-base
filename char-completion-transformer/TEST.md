@@ -305,18 +305,18 @@ All subsequent commands in this section assume the current directory is
 
 ```bash
 docker build \
-  --tag ai-model-dev \
+  --tag ai-model-dev-base \
   --file .devcontainer/Dockerfile \
   .
 ```
 
 Expected: the build finishes successfully and tags the image as
-`ai-model-dev:latest`.
+`ai-model-dev-base:latest`.
 
 Confirm it exists:
 
 ```bash
-docker image inspect ai-model-dev:latest >/dev/null \
+docker image inspect ai-model-dev-base:latest >/dev/null \
   && echo "image exists"
 ```
 
@@ -332,7 +332,7 @@ docker run --rm \
   --mount type=bind,source="$PWD/cache/huggingface",target=/ai-cache \
   --mount type=bind,source="$PWD",target=/workspace/ai-model-dev \
   --workdir /workspace/ai-model-dev/char-completion-transformer \
-  ai-model-dev \
+  ai-model-dev-base \
   python /workspace/ai-model-dev/.devcontainer/verify_environment.py
 ```
 
@@ -359,7 +359,7 @@ user rather than `root`.
 docker run --rm \
   --user "$(id -u):$(id -g)" \
   --env HOME=/tmp \
-  ai-model-dev \
+  ai-model-dev-base \
   python -c "import torch; x=torch.tensor([1., 2., 3.]); print(x * 2); print('torch test passed')"
 ```
 
@@ -382,7 +382,7 @@ docker run --rm \
   --mount type=bind,source="$PWD/cache/huggingface",target=/ai-cache \
   --mount type=bind,source="$PWD",target=/workspace/ai-model-dev \
   --workdir /workspace/ai-model-dev/char-completion-transformer \
-  ai-model-dev \
+  ai-model-dev-base \
   python test.py --prompt "The river" --n-chars 300
 ```
 
@@ -399,7 +399,7 @@ python test.py
 ```bash
 docker run --rm \
   --mount type=bind,source="$PWD/models",target=/models,readonly \
-  ai-model-dev \
+  ai-model-dev-base \
   bash -c 'if touch /models/write-test 2>/dev/null; then echo "FAILED: mount is writable"; exit 1; else echo "PASSED: /models is read-only"; fi'
 ```
 
@@ -415,7 +415,7 @@ PASSED: /models is read-only
 docker run --rm \
   --user "$(id -u):$(id -g)" \
   --mount type=bind,source="$PWD/cache/huggingface",target=/ai-cache \
-  ai-model-dev \
+  ai-model-dev-base \
   bash -c 'touch /ai-cache/write-test && rm /ai-cache/write-test && echo "PASSED: cache is writable"'
 ```
 
@@ -440,7 +440,7 @@ docker run --rm -it \
   --mount type=bind,source="$PWD/cache/huggingface",target=/ai-cache \
   --mount type=bind,source="$PWD",target=/workspace/ai-model-dev \
   --workdir /workspace/ai-model-dev/char-completion-transformer \
-  ai-model-dev \
+  ai-model-dev-base \
   bash
 ```
 
@@ -472,7 +472,7 @@ docker run --rm -it \
   --mount type=bind,source="$PWD/cache/huggingface",target=/ai-cache \
   --mount type=bind,source="$PWD",target=/workspace/ai-model-dev \
   --workdir /workspace/ai-model-dev/char-completion-transformer \
-  ai-model-dev \
+  ai-model-dev-base \
   jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
 ```
 

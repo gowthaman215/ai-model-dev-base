@@ -6,7 +6,14 @@ the Python debugger run inside Docker. The Ubuntu host's Python, Qt, and C++ ins
 are not modified.
 
 For a test-focused checklist, including operation without an IDE, see
-**[TEST.md](TEST.md)**.
+**[TEST.md](char-completion-transformer/TEST.md)**.
+
+After the September 10 repository move, use `~/10718695/github/ai-model-dev-base`
+for host commands below that refer to `~/10718695/github/ai-model-dev`.
+The Docker image is `ai-model-dev-base:latest`, the container workspace remains
+`/workspace/ai-model-dev`, and the Hugging Face cache is mounted at `/ai-cache`
+(`HF_HOME`) in both VS Code and the terminal launcher. See
+[DEVCONTAINER-RECOVERY.md](DEVCONTAINER-RECOVERY.md) for restored files and checks.
 
 ## Architecture
 
